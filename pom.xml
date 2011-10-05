@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.threerings</groupId>
     <artifactId>ooo-parent</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>ooo-cron</artifactId>
