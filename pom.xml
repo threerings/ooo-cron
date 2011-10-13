@@ -39,9 +39,10 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <links>
-            <!-- TODO: facebook API docs? -->
-            <link>http://samskivert.googlecode.com/svn/apidocs/</link>
+            <link>http://samskivert.github.com/samskivert/apidocs/</link>
             <link>http://docs.guava-libraries.googlecode.com/git/javadoc/</link>
+            <link>http://depot.googlecode.com/svn/apidocs/</link>
+            <!-- TODO: facebook API docs? -->
           </links>
         </configuration>
       </plugin>
