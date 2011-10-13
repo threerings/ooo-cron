@@ -40,7 +40,7 @@
   </target>
 
   <target name="install" depends="package" description="Installs to local Maven repository.">
-    <mavendeploy file="${jar.file}" pom="pom.xml"/>
+    <maveninstall file="${jar.file}" pom="pom.xml"/>
   </target>
 
   <target name="deploy" depends="package,javadoc" description="Deploys to remote Maven repository.">
