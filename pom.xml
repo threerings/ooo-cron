@@ -6,12 +6,12 @@
   <parent>
     <groupId>com.threerings</groupId>
     <artifactId>ooo-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
 
   <artifactId>ooo-cron</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>ooo-cron</name>
 
   <dependencies>
