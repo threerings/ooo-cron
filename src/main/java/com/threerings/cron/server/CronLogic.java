@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -19,9 +20,9 @@ import com.google.inject.Inject;
 
 import com.samskivert.util.Calendars;
 import com.samskivert.util.Interval;
-import com.samskivert.util.Invoker;
 import com.samskivert.util.Lifecycle;
 import com.samskivert.util.RandomUtil;
+import com.samskivert.util.RunQueue;
 
 import com.threerings.cron.server.persist.CronRepository;
 
@@ -109,11 +110,30 @@ public class CronLogic
 
     /**
      * A system using the CronLogic should extend this class with a class annotated as @Singleton
-     * and which injects the appropriate invoker into its constructor.
+     * and which injects the appropriate executor into its constructor.
      */
-    protected CronLogic (Lifecycle cycle, Invoker invoker)
+    protected CronLogic (Lifecycle cycle, final ExecutorService execsvc)
     {
-        _ticker = new JobTicker(invoker);
+        this(cycle, new RunQueue() {
+            @Override public void postRunnable (Runnable r) {
+                execsvc.execute(r);
+            }
+            @Override public boolean isDispatchThread () {
+                return false; // we know this isn't needed for our purposes
+            }
+            @Override public boolean isRunning () {
+                return !execsvc.isShutdown();
+            }
+        });
+    }
+
+    /**
+     * A system using the CronLogic should extend this class with a class annotated as @Singleton
+     * and which injects the appropriate run queue into its constructor.
+     */
+    protected CronLogic (Lifecycle cycle, RunQueue runQueue)
+    {
+        _ticker = new JobTicker(runQueue);
         cycle.addComponent(new Lifecycle.Component() {
             public void init () {
                 // scheule our ticker to start running at 0 milliseconds after the minute; we'll
@@ -184,8 +204,8 @@ public class CronLogic
 
     protected class JobTicker extends Interval
     {
-        public JobTicker (Invoker invoker) {
-            super(invoker);
+        public JobTicker (RunQueue runQueue) {
+            super(runQueue);
         }
 
         @Override public void expired () {
