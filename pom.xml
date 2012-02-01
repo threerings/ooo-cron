@@ -17,9 +17,7 @@
 
   <scm>
     <connection>scm:git:git://github.com/threerings/ooo-cron.git</connection>
-    <developerConnection>
-      scm:git:ssh://src1.earth.threerings.net/export/git/repos/ooo-cron.git
-    </developerConnection>
+    <developerConnection>scm:git:git@github.com:threerings/ooo-cron.git</developerConnection>
     <url>http://github.com/threerings/ooo-cron</url>
   </scm>
 
