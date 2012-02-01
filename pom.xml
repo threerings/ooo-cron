@@ -1,18 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.threerings</groupId>
-    <artifactId>ooo-parent</artifactId>
-    <version>1.0</version>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
   </parent>
 
+  <groupId>com.threerings</groupId>
   <artifactId>ooo-cron</artifactId>
   <packaging>jar</packaging>
   <version>1.1-SNAPSHOT</version>
+
   <name>ooo-cron</name>
+  <description>A multi-server cron service that coordinates via a shared database table.</description>
+
+  <scm>
+    <connection>scm:git:git://github.com/threerings/ooo-cron.git</connection>
+    <developerConnection>
+      scm:git:ssh://src1.earth.threerings.net/export/git/repos/ooo-cron.git
+    </developerConnection>
+    <url>http://github.com/threerings/ooo-cron</url>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>The (New) BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>samskivert</id>
+      <name>Michael Bayne</name>
+      <email>mdb@samskivert.com</email>
+    </developer>
+  </developers>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <source.version>1.6</source.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -36,7 +66,30 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>${source.version}</source>
+          <target>${source.version}</target>
+          <fork>true</fork>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
+          <!-- avert your eyes at the below "recommended" workaround -->
+          <compilerArgument>-Xlint" "-Xlint:-serial" "-Xlint:-path</compilerArgument>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.4.3</version>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
         <configuration>
           <links>
             <link>http://samskivert.github.com/samskivert/apidocs/</link>
@@ -44,8 +97,40 @@
             <link>http://depot.googlecode.com/svn/apidocs/</link>
             <!-- TODO: facebook API docs? -->
           </links>
+          <quiet>true</quiet>
+          <show>public</show>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property><name>performRelease</name><value>true</value></property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <keyname>mdb@samskivert.com</keyname>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
