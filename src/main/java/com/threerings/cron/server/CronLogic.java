@@ -136,7 +136,7 @@ public class CronLogic
         _ticker = new JobTicker(runQueue);
         cycle.addComponent(new Lifecycle.Component() {
             public void init () {
-                // scheule our ticker to start running at 0 milliseconds after the minute; we'll
+                // schedule our ticker to start running at 0 milliseconds after the minute; we'll
                 // randomize from there, but this reduces any initial bias
                 Calendar cal = Calendar.getInstance();
                 long curmils = cal.get(Calendar.SECOND) * 1000L + cal.get(Calendar.MILLISECOND);
