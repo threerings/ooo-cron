@@ -41,6 +41,56 @@ import static com.threerings.cron.Log.log;
 public class CronLogic
 {
     /**
+     * Either you should subclass CronLogic and annotate your class as &at;Singleton and
+     * ensure the appropriate executor is injected to its constructor, or you can use
+     * this class directly and bind a constructed instance...
+     *
+     * <pre>{@code
+     *    bind(CronLogic.class).toInstance(new CronLogic(...));
+     * }<pre>
+     */
+    public CronLogic (Lifecycle cycle, final ExecutorService execsvc)
+    {
+        this(cycle, new RunQueue() {
+            @Override public void postRunnable (Runnable r) {
+                execsvc.execute(r);
+            }
+            @Override public boolean isDispatchThread () {
+                return false; // we know this isn't needed for our purposes
+            }
+            @Override public boolean isRunning () {
+                return !execsvc.isShutdown();
+            }
+        });
+    }
+
+    /**
+     * Either you should subclass CronLogic and annotate your class as &at;Singleton and
+     * ensure the appropriate runqueue is injected to its constructor, or you can use
+     * this class directly and bind a constructed instance...
+     *
+     * <pre>{@code
+     *    bind(CronLogic.class).toInstance(new CronLogic(...));
+     * }<pre>
+     */
+    public CronLogic (Lifecycle cycle, RunQueue runQueue)
+    {
+        _ticker = new JobTicker(runQueue);
+        cycle.addComponent(new Lifecycle.Component() {
+            public void init () {
+                // schedule our ticker to start running at 0 milliseconds after the minute; we'll
+                // randomize from there, but this reduces any initial bias
+                Calendar cal = Calendar.getInstance();
+                long curmils = cal.get(Calendar.SECOND) * 1000L + cal.get(Calendar.MILLISECOND);
+                _ticker.schedule(60 * 1000L - curmils);
+            }
+            public void shutdown () {
+                _ticker.cancel();
+            }
+        });
+    }
+
+    /**
      * Schedules a job every N hours. We schedule the job at midnight and then again every N hours
      * for the rest of the day. This means that if N does not evenly divide 24, there may be a gap
      * smaller than N between the last job of the day and 00:00 of the next day.
@@ -106,46 +156,6 @@ public class CronLogic
                 }
             }
         }
-    }
-
-    /**
-     * A system using the CronLogic should extend this class with a class annotated as @Singleton
-     * and which injects the appropriate executor into its constructor.
-     */
-    protected CronLogic (Lifecycle cycle, final ExecutorService execsvc)
-    {
-        this(cycle, new RunQueue() {
-            @Override public void postRunnable (Runnable r) {
-                execsvc.execute(r);
-            }
-            @Override public boolean isDispatchThread () {
-                return false; // we know this isn't needed for our purposes
-            }
-            @Override public boolean isRunning () {
-                return !execsvc.isShutdown();
-            }
-        });
-    }
-
-    /**
-     * A system using the CronLogic should extend this class with a class annotated as @Singleton
-     * and which injects the appropriate run queue into its constructor.
-     */
-    protected CronLogic (Lifecycle cycle, RunQueue runQueue)
-    {
-        _ticker = new JobTicker(runQueue);
-        cycle.addComponent(new Lifecycle.Component() {
-            public void init () {
-                // schedule our ticker to start running at 0 milliseconds after the minute; we'll
-                // randomize from there, but this reduces any initial bias
-                Calendar cal = Calendar.getInstance();
-                long curmils = cal.get(Calendar.SECOND) * 1000L + cal.get(Calendar.MILLISECOND);
-                _ticker.schedule(60 * 1000L - curmils);
-            }
-            public void shutdown () {
-                _ticker.cancel();
-            }
-        });
     }
 
     protected void executeJobs (int minuteOfDay)
